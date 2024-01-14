@@ -1,4 +1,3 @@
-import bcrypt from 'bcrypt'
 import { type NextFunction, type Request, type Response } from 'express'
 import jwt from 'jsonwebtoken'
 import { type InsertOneResult } from 'mongodb'
@@ -30,7 +29,7 @@ export const AuthenticationMiddleWare = (
 }
 
 export const generateToken = (user: User): string => {
-  return jwt.sign(user, sercretKey)
+  return jwt.sign(user, sercretKey, { expiresIn: '1h' })
 }
 
 type LoginReponse = {
@@ -42,11 +41,20 @@ export const login = async (
   email: string,
   password: string
 ): Promise<LoginReponse | null> => {
-  const user: User | null = await userRepository.findOne({ email })
+  const user: User | null = await userRepository.findOne(
+    { email },
+    { projection: { password: 1, email: 1, name: 1 } }
+  )
   if (user === null) {
     return null
   }
-  const passwordMatch: boolean = await bcrypt.compare(password, user.password)
+  console.log('Login user', user)
+  const passwordMatch: boolean = await Bun.password.verify(
+    password,
+    user.password,
+    'bcrypt'
+  )
+  console.log('passwordMatch', passwordMatch)
   if (!passwordMatch) {
     return null
   }
@@ -56,8 +64,12 @@ export const login = async (
   }
 }
 
-type SignupResponse = {
+export type SignupSuccessResponse = {
   user: User
+}
+
+export type SignupErrorResponse = {
+  error: string
 }
 
 type SignupRequest = {
@@ -70,19 +82,22 @@ export const signupUser = async ({
   name,
   email,
   password,
-}: SignupRequest): Promise<SignupResponse | null> => {
+}: SignupRequest): Promise<SignupSuccessResponse | SignupErrorResponse> => {
   const existingUser = await userRepository.findOne({ email })
   if (existingUser !== null) {
-    return null
+    return { error: 'User already exists' }
   }
-  const hashedPassword = await bcrypt.hash(password, 10)
+  const hashedPassword = await Bun.password.hash(password, {
+    algorithm: 'bcrypt',
+    cost: 10,
+  })
   const result: InsertOneResult<User> = await userRepository.insertOne({
     name,
     email,
     password: hashedPassword,
   })
   if (!result.acknowledged) {
-    return null
+    return { error: 'Unable to create user' }
   } else {
     return {
       user: { name, email, password: hashedPassword, _id: result.insertedId },

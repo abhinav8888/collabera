@@ -40,6 +40,10 @@ class MongoConnectionManager {
   async getClient(): Promise<MongoClient> {
     return this.client
   }
+
+  async closeConnection(): Promise<void> {
+    await this.client.close()
+  }
 }
 
 const mongoConnectionManager = new MongoConnectionManager()

@@ -10,6 +10,12 @@ const createCustomerSchema = z.object({
   age: z.number().positive(),
 })
 
+const updateCustomerSchema = z.object({
+  name: z.string().min(3).optional(),
+  email: z.string().email().optional(),
+  age: z.number().positive().optional(),
+})
+
 interface CustomerController {
   createCustomer: RequestHandler
   getAllCustomers: RequestHandler
@@ -21,12 +27,12 @@ interface CustomerController {
 const createCustomer = async (req: Request, res: Response): Promise<void> => {
   try {
     const { name, email, age } = createCustomerSchema.parse(req.body)
-    const savedCustomer = await customerService.createCustomer({
+    await customerService.createCustomer({
       name,
       email,
       age,
     })
-    res.status(201).json(savedCustomer)
+    res.status(201)
   } catch (error) {
     res.status(400).json({ error: 'Bad Request' })
   }
@@ -56,7 +62,7 @@ const getCustomer = async (req: Request, res: Response): Promise<void> => {
 
 const updateCustomer = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { name, email, age } = createCustomerSchema.parse(req.body)
+    const { name, email, age } = updateCustomerSchema.parse(req.body)
     const customerId: ObjectId = new ObjectId(req.params.id)
     const customer = await customerService.updateCustomer(customerId, {
       name,

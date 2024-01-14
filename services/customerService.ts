@@ -8,7 +8,7 @@ interface CustomerService {
   ) => Promise<InsertOneResult<Customer>>
   updateCustomer: (
     _id: ObjectId,
-    customer: Customer
+    customer: Partial<Customer>
   ) => Promise<Customer | null>
   getCustomerList: () => Promise<Customer[]>
   getCustomer: (_id: ObjectId) => Promise<Customer | null>
@@ -31,7 +31,7 @@ const createCustomer = async (
 
 const updateCustomer = async (
   _id: ObjectId,
-  customer: Customer
+  customer: Partial<Customer>
 ): Promise<Customer | null> => {
   return await customerRepository.findByIdAndUpdate({ _id }, { $set: customer })
 }

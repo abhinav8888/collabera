@@ -37,10 +37,10 @@ export default abstract class BaseRepository<T extends IBaseCollectionFields> {
     )
   }
 
-  findOne = async (
+  async findOne(
     filter: Filter<T>,
     options?: FindOptions
-  ): Promise<WithId<T> | null> => {
+  ): Promise<WithId<T> | null> {
     const collection: Collection<T> = await this.getCollection()
     if (options !== undefined) {
       return await collection.findOne(filter, options)
@@ -48,19 +48,19 @@ export default abstract class BaseRepository<T extends IBaseCollectionFields> {
     return await collection.findOne(filter)
   }
 
-  findByIdAndUpdate = async (
+  async findByIdAndUpdate(
     filter: Filter<T>,
     update: UpdateFilter<T>,
     options: FindOneAndUpdateOptions = { returnDocument: 'after' }
-  ): Promise<WithId<T> | null> => {
+  ): Promise<WithId<T> | null> {
     const collection: Collection<T> = await this.getCollection()
     return await collection.findOneAndUpdate(filter, update, options)
   }
 
-  find = async (
+  async find(
     filter: Filter<T>,
     options?: FindOptions
-  ): Promise<Array<WithId<T>>> => {
+  ): Promise<Array<WithId<T>>> {
     const collection: Collection<T> = await this.getCollection()
     if (options !== undefined) {
       if (options.limit !== undefined && isNaN(options.limit)) {
@@ -71,9 +71,9 @@ export default abstract class BaseRepository<T extends IBaseCollectionFields> {
     return await collection.find(filter).toArray()
   }
 
-  insertOne = async (
+  async insertOne(
     body: OptionalUnlessRequiredId<WithoutId<T>>
-  ): Promise<InsertOneResult<T>> => {
+  ): Promise<InsertOneResult<T>> {
     const collection: Collection<WithoutId<T>> =
       await this.getCollectionForInsert()
     return await collection.insertOne(body)
