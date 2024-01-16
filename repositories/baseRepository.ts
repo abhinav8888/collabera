@@ -76,6 +76,9 @@ export default abstract class BaseRepository<T extends IBaseCollectionFields> {
   ): Promise<InsertOneResult<T>> {
     const collection: Collection<WithoutId<T>> =
       await this.getCollectionForInsert()
+    if (body.createdAt === undefined) {
+      body.createdAt = new Date()
+    }
     return await collection.insertOne(body)
   }
 
@@ -83,6 +86,11 @@ export default abstract class BaseRepository<T extends IBaseCollectionFields> {
     body: Array<OptionalUnlessRequiredId<T>>
   ): Promise<InsertManyResult<T>> => {
     const collection: Collection<T> = await this.getCollection()
+    body.forEach((item) => {
+      if (item.createdAt === undefined) {
+        item.createdAt = new Date()
+      }
+    })
     return await collection.insertMany(body)
   }
 

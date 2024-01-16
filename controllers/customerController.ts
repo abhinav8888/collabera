@@ -3,6 +3,7 @@ import { ObjectId } from 'mongodb'
 import { z } from 'zod'
 import type { Customer } from '../models/customer'
 import { customerService } from '../services/customerService'
+import { formatZodError } from '../services/formattingService'
 
 const createCustomerSchema = z.object({
   name: z.string().min(3),
@@ -27,14 +28,22 @@ interface CustomerController {
 const createCustomer = async (req: Request, res: Response): Promise<void> => {
   try {
     const { name, email, age } = createCustomerSchema.parse(req.body)
-    await customerService.createCustomer({
+    const result = await customerService.createCustomer({
       name,
       email,
       age,
     })
-    res.status(201)
+    res.status(201).json({
+      message: 'Customer created successfully',
+      _id: result.insertedId,
+    })
   } catch (error) {
-    res.status(400).json({ error: 'Bad Request' })
+    if (error instanceof z.ZodError) {
+      const errors = formatZodError(error)
+      res.status(400).json({ errors })
+    } else {
+      res.status(500).json({ errors: ['Internal Server Error'] })
+    }
   }
 }
 const getAllCustomers = async (req: Request, res: Response): Promise<void> => {
@@ -42,28 +51,41 @@ const getAllCustomers = async (req: Request, res: Response): Promise<void> => {
     const customers: Customer[] = await customerService.getCustomerList()
     res.json(customers)
   } catch (error) {
-    res.status(500).json({ error: 'Internal Server Error' })
+    res.status(500).json({ errors: ['Internal Server Error'] })
   }
 }
 const getCustomer = async (req: Request, res: Response): Promise<void> => {
+  let customerId: ObjectId
   try {
-    const customer = await customerService.getCustomer(
-      new ObjectId(req.params.id)
-    )
+    customerId = new ObjectId(req.params.id)
+  } catch (error) {
+    res.status(404).json({ errors: ['Invalid customer id'] })
+    return
+  }
+
+  try {
+    const customer = await customerService.getCustomer(customerId)
     if (customer === null) {
-      res.status(404).json({ error: 'Customer not found' })
+      res.status(404).json({ errors: ['Customer not found'] })
       return
     }
     res.json(customer)
   } catch (error) {
-    res.status(500).json({ error: 'Internal Server Error' })
+    res.status(500).json({ errors: ['Internal Server Error'] })
   }
 }
 
 const updateCustomer = async (req: Request, res: Response): Promise<void> => {
+  let customerId: ObjectId
+  try {
+    customerId = new ObjectId(req.params.id)
+  } catch (error) {
+    res.status(404).json({ errors: ['Invalid customer id'] })
+    return
+  }
   try {
     const { name, email, age } = updateCustomerSchema.parse(req.body)
-    const customerId: ObjectId = new ObjectId(req.params.id)
+    customerId = new ObjectId(req.params.id)
     const customer = await customerService.updateCustomer(customerId, {
       name,
       email,
@@ -71,27 +93,38 @@ const updateCustomer = async (req: Request, res: Response): Promise<void> => {
       _id: customerId,
     })
     if (customer == null) {
-      res.status(404).json({ error: 'Customer not found' })
+      res.status(404).json({ errors: ['Customer not found'] })
       return
     }
     res.json(customer)
   } catch (error) {
-    res.status(500).json({ error: 'Internal Server Error' })
+    if (error instanceof z.ZodError) {
+      const errors = formatZodError(error)
+      res.status(400).json({ errors })
+    } else {
+      res.status(500).json({ errors: ['Internal Server Error'] })
+    }
   }
 }
 
 const deleteCustomer = async (req: Request, res: Response): Promise<void> => {
+  let customerId: ObjectId
   try {
-    const customer = await customerService.removeCustomer(
-      new ObjectId(req.params.id)
-    )
+    customerId = new ObjectId(req.params.id)
+  } catch (error) {
+    res.status(404).json({ errors: ['Invalid customer id'] })
+    return
+  }
+
+  try {
+    const customer = await customerService.removeCustomer(customerId)
     if (!customer) {
-      res.status(404).json({ error: 'Customer not found' })
+      res.status(404).json({ errors: ['Customer not found'] })
       return
     }
-    res.json({ message: 'Customer deleted successfully' })
+    res.status(200).json({ message: 'Customer deleted successfully' })
   } catch (error) {
-    res.status(500).json({ error: 'Internal Server Error' })
+    res.status(500).json({ errors: ['Internal Server Error'] })
   }
 }
 

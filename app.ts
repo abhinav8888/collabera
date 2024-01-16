@@ -1,12 +1,19 @@
+import cors from 'cors'
+import dotenv from 'dotenv'
 import express, {
   type NextFunction,
   type Request,
   type Response,
 } from 'express'
-import cors from 'cors'
-import mongoClient from './services/mongoService'
-import customerRouter from './routers/customerRouter'
+
+dotenv.config()
+
+// eslint-disable-next-line import/first
 import authRouter from './routers/authRouter'
+// eslint-disable-next-line import/first
+import customerRouter from './routers/customerRouter'
+// eslint-disable-next-line import/first
+import mongoClient from './services/mongoService'
 
 const app = express()
 
@@ -27,7 +34,6 @@ app.use((err: Error, _: Request, res: Response, next: NextFunction) => {
 
 // assume 404 since no middleware responded
 app.use((req: Request, res: Response) => {
-  console.log(req.path)
   res.status(404).send({ message: 'Resource not found', body: req.query })
 })
 
@@ -43,3 +49,5 @@ process.on('SIGTERM', () => {
     console.log('HTTP server closed')
   })
 })
+
+export { app, server }

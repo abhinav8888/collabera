@@ -1,3 +1,4 @@
+import bcrypt from 'bcrypt'
 import { type NextFunction, type Request, type Response } from 'express'
 import jwt from 'jsonwebtoken'
 import { type InsertOneResult } from 'mongodb'
@@ -5,6 +6,26 @@ import { type User } from '../models/user'
 import userRepository from '../repositories/userRepository'
 
 const sercretKey = process.env.JWT_SECRET_KEY ?? 'json-secret-key'
+
+export type SignupSuccessResponse = {
+  user: User
+}
+
+export type SignupErrorResponse = {
+  error: string
+  status?: number
+}
+
+type SignupRequest = {
+  name: string
+  email: string
+  password: string
+}
+
+type LoginReponse = {
+  user: User
+  token: string
+}
 
 // This is a middleware function that will be used to validate the token
 export const AuthenticationMiddleWare = (
@@ -32,11 +53,6 @@ export const generateToken = (user: User): string => {
   return jwt.sign(user, sercretKey, { expiresIn: '1h' })
 }
 
-type LoginReponse = {
-  user: User
-  token: string
-}
-
 export const login = async (
   email: string,
   password: string
@@ -48,13 +64,7 @@ export const login = async (
   if (user === null) {
     return null
   }
-  console.log('Login user', user)
-  const passwordMatch: boolean = await Bun.password.verify(
-    password,
-    user.password,
-    'bcrypt'
-  )
-  console.log('passwordMatch', passwordMatch)
+  const passwordMatch: boolean = await bcrypt.compare(password, user.password)
   if (!passwordMatch) {
     return null
   }
@@ -64,20 +74,6 @@ export const login = async (
   }
 }
 
-export type SignupSuccessResponse = {
-  user: User
-}
-
-export type SignupErrorResponse = {
-  error: string
-}
-
-type SignupRequest = {
-  name: string
-  email: string
-  password: string
-}
-
 export const signupUser = async ({
   name,
   email,
@@ -85,19 +81,16 @@ export const signupUser = async ({
 }: SignupRequest): Promise<SignupSuccessResponse | SignupErrorResponse> => {
   const existingUser = await userRepository.findOne({ email })
   if (existingUser !== null) {
-    return { error: 'User already exists' }
+    return { error: 'User already exists', status: 400 }
   }
-  const hashedPassword = await Bun.password.hash(password, {
-    algorithm: 'bcrypt',
-    cost: 10,
-  })
+  const hashedPassword = await bcrypt.hash(password, 10)
   const result: InsertOneResult<User> = await userRepository.insertOne({
     name,
     email,
     password: hashedPassword,
   })
   if (!result.acknowledged) {
-    return { error: 'Unable to create user' }
+    return { error: 'Unable to create user', status: 500 }
   } else {
     return {
       user: { name, email, password: hashedPassword, _id: result.insertedId },
