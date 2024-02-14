@@ -1,0 +1,43 @@
+name: Node.js CI/CD to AWS EC2
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v1
+        with:
+          node-version: '16' # Specify your Node.js version here
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run tests
+        run: npm test
+
+      # Build step
+      - name: Build
+        run: npm run build
+        # Ensure your package.json has a "build" script.
+#   deploy:
+#     needs: build-and-test
+#     runs-on: ubuntu-latest
+#     steps:
+#       - uses: actions/checkout@v2
+
+#       - name: Deploy to AWS EC2
+#         uses: easingthemes/ssh-deploy@v2.1.5
+#         env:
+#           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+#           ARGS: '-avzr --delete'
+#           SOURCE: 'dist/' # Assuming your build script outputs to the dist directory
+#           REMOTE_HOST: ${{ secrets.HOST }}
+#           REMOTE_USER: ${{ secrets.USERNAME }}
+#           TARGET: '/path/to/your/deployment/directory'
