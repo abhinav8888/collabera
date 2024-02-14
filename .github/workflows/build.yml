@@ -40,4 +40,4 @@ jobs:
           SOURCE: 'build/'
           REMOTE_HOST: '13.201.105.123'
           REMOTE_USER: 'ec2-user'
-          TARGET: '/home/'
+          TARGET: '/home/ec2-user/app/'
