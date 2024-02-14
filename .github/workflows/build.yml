@@ -28,13 +28,13 @@ jobs:
       - name: List directory
         run: ls -alh
 
-  deploy:
-    needs: build-and-test
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: List directory
-        run: ls -alh
+      # deploy:
+      #   needs: build-and-test
+      #   runs-on: ubuntu-latest
+      #   steps:
+      #     - uses: actions/checkout@v4
+      #     - name: List directory
+      #       run: ls -alh
 
       - name: Deploy to EC2
         uses: easingthemes/ssh-deploy@v2.1.5
