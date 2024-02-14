@@ -49,7 +49,7 @@ jobs:
           SOURCE: 'build/'
           REMOTE_HOST: ${{ secrets.REMOTE_HOST }}
           REMOTE_USER: 'ec2-user'
-          TARGET: '/home/ec2-user/collabera/'
+          TARGET: '/home/ec2-user/collabera/build/'
           SCRIPT_AFTER: |
             cd /home/ec2-user/collabera/
             npm install
