@@ -37,9 +37,9 @@ app.use((req: Request, res: Response) => {
   res.status(404).send({ message: 'Resource not found', body: req.query })
 })
 
-const server = app.listen(3000, () => {
+const server = app.listen(3001, () => {
   void mongoClient.initiateConnection()
-  console.log('Server is running on port 3000')
+  console.log('Server is running on port 3001')
 })
 
 process.on('SIGTERM', () => {
