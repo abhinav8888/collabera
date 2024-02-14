@@ -38,6 +38,6 @@ jobs:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
           ARGS: '-rlgoDzvc -i --delete'
           SOURCE: 'build/'
-          REMOTE_HOST: ${{ secrets.REMOTE_HOST }}
+          REMOTE_HOST: '13.201.105.123'
           REMOTE_USER: 'ec2-user'
           TARGET: '/home/'
