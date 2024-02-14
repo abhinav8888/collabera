@@ -9,12 +9,12 @@ jobs:
   build-and-test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       - name: Set up Node.js
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@v4
         with:
-          node-version: '16' # Specify your Node.js version here
+          node-version: '20'
 
       - name: Install dependencies
         run: npm install
@@ -26,18 +26,18 @@ jobs:
       - name: Build
         run: npm run build
         # Ensure your package.json has a "build" script.
-#   deploy:
-#     needs: build-and-test
-#     runs-on: ubuntu-latest
-#     steps:
-#       - uses: actions/checkout@v2
+  deploy:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
 
-#       - name: Deploy to AWS EC2
-#         uses: easingthemes/ssh-deploy@v2.1.5
-#         env:
-#           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-#           ARGS: '-avzr --delete'
-#           SOURCE: 'dist/' # Assuming your build script outputs to the dist directory
-#           REMOTE_HOST: ${{ secrets.HOST }}
-#           REMOTE_USER: ${{ secrets.USERNAME }}
-#           TARGET: '/path/to/your/deployment/directory'
+      - name: Deploy to AWS EC2
+        uses: easingthemes/ssh-deploy@v2.1.5
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          ARGS: '-avzr --delete'
+          SOURCE: 'build/' # Assuming your build script outputs to the dist directory
+          REMOTE_HOST: ${{ secrets.REMOTE_HOST }}
+          REMOTE_USER: 'ubuntu'
+          TARGET: '/home/ec2-user/app/'
