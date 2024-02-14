@@ -25,16 +25,21 @@ jobs:
       # Build step
       - name: Build
         run: npm run build
-      - name: List directory
-        run: ls -alh
+      - name: Upload build directory
+        uses: actions/upload-artifact@v2
+        with:
+          name: build
+          path: build
 
-      # deploy:
-      #   needs: build-and-test
-      #   runs-on: ubuntu-latest
-      #   steps:
-      #     - uses: actions/checkout@v4
-      #     - name: List directory
-      #       run: ls -alh
+  deploy:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download build directory
+        uses: actions/download-artifact@v2
+        with:
+          name: build
+          path: build
 
       - name: Deploy to EC2
         uses: easingthemes/ssh-deploy@v2.1.5
