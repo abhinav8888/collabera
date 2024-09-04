@@ -5,3 +5,4 @@ export interface Customer extends IBaseCollectionFields {
   email: string
   age: number
 }
+# sample comment added
