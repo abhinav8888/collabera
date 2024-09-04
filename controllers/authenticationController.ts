@@ -13,7 +13,7 @@ const loginSchema = z.object({
   password: z.string().min(6),
 })
 
-// use z for runtime validations
+// use package for runtime validations on signup
 const signupSchema = z.object({
   email: z.string().email(),
   password: z.string().min(6),
