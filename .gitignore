@@ -32,6 +32,7 @@ coverage
 # Bower dependency directory (https://bower.io/)
 bower_components
 
+
 # node-waf configuration
 .lock-wscript
 
@@ -131,3 +132,4 @@ dist
 
 # build
 build
+# comment 1
